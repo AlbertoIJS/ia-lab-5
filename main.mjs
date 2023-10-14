@@ -41,31 +41,40 @@ fs.createReadStream("train.csv")
       .pipe(parse({ delimiter: ",", from_line: 2 }))
       .on("data", (row) => fillMap(testMap, row))
       .on("end", () => {
-        let totalPLength = 0,
-          totalPWidth = 0;
+        const totalCount = new Map();
 
-        for (const [, val] of testMap) {
-          let currentLength = val[0][0],
-            currentWidth = [0][1];
+        for (const key of testMap.keys())
+          for (const [currentLength, currentWidth] of testMap.get(key)) {
+            let currentCount = totalCount.get(key) ?? [0, 0];
 
-          if (currentLength >= petallength1 && currentLength <= petallength2)
-            totalPLength++;
-          if (currentWidth >= petalwidth1 && currentWidth <= petalwidth2)
-            totalPWidth++;
-        }
-        console.log("petallength clasificados correctamente: ", totalPLength);
-        console.log("petalwidth clasificados correctamente: ", totalPWidth);
+            if ("Iris-setosa") {
+              if (currentLength < petallength1) currentCount[0]++;
+              if (currentWidth < petalwidth1) currentCount[1]++;
+            }
+
+            if ("Iris-versicolor") {
+              if (currentLength >= petallength1 && currentLength < petallength2)
+                currentCount[0]++;
+              if (currentWidth >= petalwidth1 && currentWidth < petalwidth2)
+                currentCount[1]++;
+            }
+            if ("Iris-virginica") {
+              if (currentLength >= petallength2) currentCount[0]++;
+              if (currentWidth >= petalwidth2) currentCount[1]++;
+            }
+
+            totalCount.set(key, currentCount);
+          }
+
+        console.log(Array.from(totalCount));
       });
   });
 
 function fillMap(map, row) {
-  let arr = map.get(row[2]);
-
+  let arr = map.get(row[2]) ?? [];
   const val = row.slice(0, 2);
-  if (arr === undefined) arr = [val];
-  else arr.push(val);
 
-  map.set(row[2], arr);
+  map.set(row[2], [...arr, val]);
 }
 
 function getAverage(nums1, nums2, columnName) {
@@ -76,11 +85,11 @@ function getAverage(nums1, nums2, columnName) {
 
   const col = columns[columnName];
 
-  const petallength = nums1.map((s) => Number(s[col]));
-  const petalwidth = nums2.map((s) => Number(s[col]));
+  const arr1 = nums1.map((s) => Number(s[col]));
+  const arr2 = nums2.map((s) => Number(s[col]));
 
-  const min = Math.min(...petallength);
-  const max = Math.max(...petalwidth);
+  const min = Math.max(...arr1);
+  const max = Math.min(...arr2);
 
   return (min + max) / 2;
 }
