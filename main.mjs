@@ -7,13 +7,13 @@ Ramirez Juárez Arturo Yamil
 */
 
 import fs from "fs";
-import { parse } from "csv-parse";
+import {parse} from "csv-parse";
 
 const trainMap = new Map(),
   testMap = new Map();
 
 fs.createReadStream("train.csv")
-  .pipe(parse({ delimiter: ",", from_line: 2 }))
+  .pipe(parse({delimiter: ",", from_line: 2}))
   .on("data", (row) => fillMap(trainMap, row))
   .on("end", () => {
     const petallength1 = getAverage(
@@ -38,7 +38,7 @@ fs.createReadStream("train.csv")
       );
 
     fs.createReadStream("test.csv")
-      .pipe(parse({ delimiter: ",", from_line: 2 }))
+      .pipe(parse({delimiter: ",", from_line: 2}))
       .on("data", (row) => fillMap(testMap, row))
       .on("end", () => {
         const totalCount = new Map();
@@ -47,18 +47,15 @@ fs.createReadStream("train.csv")
           for (const [currentLength, currentWidth] of testMap.get(key)) {
             let currentCount = totalCount.get(key) ?? [0, 0];
 
-            if ("Iris-setosa") {
-              if (currentLength < petallength1) currentCount[0]++;
-              if (currentWidth < petalwidth1) currentCount[1]++;
-            }
-
-            if ("Iris-versicolor") {
-              if (currentLength >= petallength1 && currentLength < petallength2)
+            if (key === "Iris-setosa") {
+              if (currentLength >= 0 && currentLength <= petallength1) currentCount[0]++;
+              if (currentWidth >= 0 && currentWidth <= petalwidth1) currentCount[1]++;
+            } else if (key === "Iris-versicolor") {
+              if (currentLength >= petallength1 && currentLength <= petallength2)
                 currentCount[0]++;
-              if (currentWidth >= petalwidth1 && currentWidth < petalwidth2)
+              if (currentWidth >= petalwidth1 && currentWidth <= petalwidth2)
                 currentCount[1]++;
-            }
-            if ("Iris-virginica") {
+            } else if (key === "Iris-virginica") {
               if (currentLength >= petallength2) currentCount[0]++;
               if (currentWidth >= petalwidth2) currentCount[1]++;
             }
